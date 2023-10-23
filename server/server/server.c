@@ -1,15 +1,25 @@
 #include "server.h"
 
-SOCKET server_socket, client_socket;
+SOCKET server_socket;
 struct sockaddr_in server_addr, client_addr;
 char* request[BUFFER];
+int addr_len = sizeof(client_addr);
 
-void mySend(char* value, char* key) {
+void clientSocket() {
+    SOCKET client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &addr_len);
+    if (client_socket == INVALID_SOCKET) {
+        close("Failed to accept client connection", 1);
+    }
+    _beginthread(serverRequestParsing, 0, client_socket);
+}
+
+void mySend(char* value, char* key, SOCKET client_socket) {
     char SEND[MYSIZE];
     if (key == NULL && value == NULL) {
         closesocket(client_socket);
         closesocket(server_socket);
         WSACleanup();
+        _endthread();
     }
     else if (key == NULL) {
         sprintf(SEND, "-> %s\n", value);
@@ -21,40 +31,42 @@ void mySend(char* value, char* key) {
     }
 }
 
-char* interactionServer() {
+char* interactionServer(SOCKET client_socket) {
     memset(request, 0, sizeof(request));
     recv(client_socket, request, sizeof(request), 0);
     if (strcmp(request, "exit\n") == 0) {
-        printf("Session closed");
-        exit(0);
+        printf("Session closed\n");
+        return 0;
     }
     printf("Received: %s", request);
     return request;
 }
 
-char serverRequestParsing() {
-    char* buffer = interactionServer();
-    char* args[20];
-    int argc;
+void serverRequestParsing(SOCKET client_socket) {
+    while (true)
+    {
+        char* buffer = interactionServer(client_socket);
+        char* args[20];
+        int argc;
 
-    char* token = strtok((char*)buffer, " \n");
-    argc = 0;
+        char* token = strtok((char*)buffer, " \n");
+        argc = 0;
 
-    while (token != NULL) {
-        char* newline = strchr(token, '\n');
-        if (newline != NULL) {
-            *newline = '\0';
+        while (token != NULL) {
+            char* newline = strchr(token, '\n');
+            if (newline != NULL) {
+                *newline = '\0';
+            }
+            args[argc] = token;
+            argc++;
+            token = strtok(NULL, " ");
         }
-        args[argc] = token;
-        argc++;
-        token = strtok(NULL, " ");
+        flags(argc, args, client_socket);
     }
-    flags(argc, args);
 }
 
-char server() {
+void server() {
     WSADATA wsa;
-    int addr_len = sizeof(client_addr);
 
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
         close("Failed to initialize Winsock", 1);
@@ -78,9 +90,4 @@ char server() {
     }
 
     printf("Server listening on port %d...\n", PORT);
-
-    client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &addr_len);
-    if (client_socket == INVALID_SOCKET) {
-        close("Failed to accept client connection", 1);
-    }
 }

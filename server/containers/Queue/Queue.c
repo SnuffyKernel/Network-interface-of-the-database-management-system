@@ -7,7 +7,7 @@ Structure* createQueue() {
     return queue;
 }
 
-void addQueue(Structure* queue, char* value, const bool output) {
+void addQueue(Structure* queue, SOCKET client_socket, char* value, const bool output) {
     StructureElement* newElement = (StructureElement*)malloc(sizeof(StructureElement));
     MemoryError(newElement);
 
@@ -24,14 +24,14 @@ void addQueue(Structure* queue, char* value, const bool output) {
 
     if (output) {
         printf("-> %s\n", value);
-        mySend(value, NULL);
-        writeFile(queue, 2);
+        mySend(value, NULL, client_socket);
+        writeFile(queue, 2, client_socket);
     }
 }
 
-void delQueue(Structure* queue) {
+void delQueue(Structure* queue, SOCKET client_socket) {
     if (queue == NULL || queue->head == NULL) {
-        close("The queue is empty or invalid", 1);
+        close("The queue is empty or invalid", 1, client_socket);
     }
 
     StructureElement* removed = queue->head;
@@ -43,26 +43,26 @@ void delQueue(Structure* queue) {
     }
 
     printf("-> %s\n", removed->value);
-    mySend(removed->value, NULL);
-    writeFile(queue, 2);
+    mySend(removed->value, NULL, client_socket);
+    writeFile(queue, 2, client_socket);
 }
 
-void mainQueue(char* command, char* value) {
+void mainQueue(char* command, char* value, SOCKET client_socket) {
     Structure* Queue = createQueue();
-    char* fileSet = readFile(1, 0, 2);
+    char* fileSet = readFile(1, 0, 2, client_socket);
 
     char* token = strtok(fileSet, " \t\n");
     while (token != NULL) {
-        addQueue(Queue, token, 0);
+        addQueue(Queue, client_socket, token, 0);
         token = strtok(NULL, " \t\n");
     }
 
     if (strcmp(command, "QPUSH") == 0) {
         if (value[0] == '\0') close("Missing a word\n", 1);
-        addQueue(Queue, value, 1);
+        addQueue(Queue, client_socket, value, 1);
     }
     else if (strcmp(command, "QPOP") == 0) {
-        delQueue(Queue);
+        delQueue(Queue, client_socket);
     }
     else close("There is no such command\n", 1);
 

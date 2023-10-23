@@ -1,11 +1,11 @@
 #include "file.h"
 
-FILE* createFile(char* formatOpen) {
+FILE* createFile(char* formatOpen, SOCKET client_socket) {
 	FILE* file = fopen(fileName, formatOpen);
 	if (file == NULL) {
 		char userResponse = '\0';
 		printf("File not found. Do you want to create a file y/n: ");
-		mySend("File not found. Do you want to create a file y/n: ", NULL);
+		mySend("File not found. Do you want to create a file y/n: ", NULL, client_socket);
 		memset(request, 0, sizeof(request));
 		recv(client_socket, request, sizeof(request), 0);
 		printf(" %s\n", request);
@@ -22,8 +22,8 @@ FILE* createFile(char* formatOpen) {
 	return file;
 }
 
-char* readFile(const bool readAllFile, const bool code, const int typeContainer) {
-	FILE* file = createFile("rb+");
+char* readFile(const bool readAllFile, const bool code, const int typeContainer, SOCKET client_socket) {
+	FILE* file = createFile("rb+", client_socket);
 
 	fseek(file, 0, SEEK_END);
 	long file_size = ftell(file);
@@ -43,8 +43,8 @@ char* readFile(const bool readAllFile, const bool code, const int typeContainer)
 
 }
 
-void writeFile(Structure* structure, const int typeContainer) {
-	char* text = readFile(0, 0, typeContainer);
+void writeFile(Structure* structure, const int typeContainer, SOCKET client_socket) {
+	char* text = readFile(0, 0, typeContainer, client_socket);
 	char* line;
 	if (!typeContainer || typeContainer == 3) {
 		line = serializeStructure(structure, typeContainer);
@@ -54,7 +54,7 @@ void writeFile(Structure* structure, const int typeContainer) {
 	}
 	text = replaceText(text, line, typeContainer);
 
-	FILE* file = createFile("w");
+	FILE* file = createFile("w", client_socket);
 
 	fprintf(file, "%s", text);
 	fclose(file);

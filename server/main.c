@@ -4,7 +4,7 @@ int main() {
 	server();
 	while (true)
 	{
-		serverRequestParsing();
+		clientSocket();
 	}
 	getchar();
 	return 0;
