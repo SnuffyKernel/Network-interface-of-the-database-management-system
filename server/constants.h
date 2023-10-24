@@ -7,6 +7,7 @@
 #include <winsock2.h>
 SOCKET server_socket, client_socket;
 struct sockaddr_in server_addr, client_addr;
+HANDLE mutex;
 char* request[BUFFER];
 char fileName[MYSIZE];
 #endif 
