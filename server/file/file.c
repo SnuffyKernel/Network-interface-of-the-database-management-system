@@ -1,6 +1,8 @@
 #include "file.h"
 
 FILE* createFile(char* formatOpen, SOCKET client_socket) {
+	mutex = CreateMutex(NULL, FALSE, NULL);
+	WaitForSingleObject(mutex, INFINITE);
 	FILE* file = fopen(fileName, formatOpen);
 	if (file == NULL) {
 		char userResponse = '\0';
@@ -19,6 +21,7 @@ FILE* createFile(char* formatOpen, SOCKET client_socket) {
 		}
 		else exit(1);
 	}
+	ReleaseMutex(mutex);
 	return file;
 }
 
