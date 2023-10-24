@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <windows.h>
 #include "../file/text/data_utilities.h"
 #include "../containers/Structure.h"
 #include "../containers/Set/Set.h"

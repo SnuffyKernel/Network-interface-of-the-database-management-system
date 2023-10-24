@@ -44,6 +44,8 @@ char* readFile(const bool readAllFile, const bool code, const int typeContainer,
 }
 
 void writeFile(Structure* structure, const int typeContainer, SOCKET client_socket) {
+	mutex = CreateMutex(NULL, FALSE, NULL);
+	WaitForSingleObject(mutex, INFINITE);
 	char* text = readFile(0, 0, typeContainer, client_socket);
 	char* line;
 	if (!typeContainer || typeContainer == 3) {
@@ -58,6 +60,7 @@ void writeFile(Structure* structure, const int typeContainer, SOCKET client_sock
 
 	fprintf(file, "%s", text);
 	fclose(file);
+	ReleaseMutex(mutex);
 	//getchar();
 	//exit(0);
 }
