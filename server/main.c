@@ -1,6 +1,8 @@
 #include "server/server.h"
+#include "constants.h"
 
 int main() {
+	mutex = CreateMutex(NULL, FALSE, NULL);
 	server();
 	while (true)
 	{
